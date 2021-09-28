@@ -1,0 +1,401 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             |.text|, CODE, READONLY, ALIGN=
+2
+    2 00000000                 THUMB
+    3 00000000                 EXPORT           main
+    4 00000000         ;SW - PJ0 and PJ1   
+    5 00000000 400603FC 
+                       GPIO_PORTJ_DATA_R
+                               EQU              0x400603FC
+    6 00000000 40060400 
+                       GPIO_PORTJ_DIR_R
+                               EQU              0x40060400
+    7 00000000 4006051C 
+                       GPIO_PORTJ_DEN_R
+                               EQU              0x4006051C
+    8 00000000 40060510 
+                       GPIO_PORTJ_PUR_R
+                               EQU              0x40060510
+    9 00000000 40060420 
+                       GPIO_PORTJ_AFSEL_R
+                               EQU              0x40060420
+   10 00000000         
+   11 00000000         ;LED - PN0 and PN1
+   12 00000000 400643FC 
+                       GPIO_PORTN_DATA_R
+                               EQU              0x400643FC
+   13 00000000 40064400 
+                       GPIO_PORTN_DIR_R
+                               EQU              0x40064400
+   14 00000000 4006451C 
+                       GPIO_PORTN_DEN_R
+                               EQU              0x4006451C
+   15 00000000 40064420 
+                       GPIO_PORTN_AFSEL_R
+                               EQU              0x40064420
+   16 00000000         
+   17 00000000 400FE608 
+                       SYSCTL_RCGCGPIO_R
+                               EQU              0x400FE608
+   18 00000000         
+   19 00000000         GPIO_Init
+   20 00000000 492E            LDR              R1, =SYSCTL_RCGCGPIO_R
+   21 00000002 6808            LDR              R0, [R1]    ; R0 = [R1]
+   22 00000004 F440 5088       ORR              R0, R0, #0x1100 ; R0 = R0|0x110
+                                                            0 allow to access P
+                                                            N and PJ
+   23 00000008 6008            STR              R0, [R1]    ; [R1] = R0
+   24 0000000A BF00            NOP
+   25 0000000C BF00            NOP
+   26 0000000E BF00            NOP
+   27 00000010 BF00            NOP                          ; allow time to fin
+                                                            ish activating
+   28 00000012         ;direction register 
+   29 00000012 492B            LDR              R1, =GPIO_PORTJ_DIR_R ; R1 = &G
+                                                            PIO_PORTJ_DIR_R
+   30 00000014 6808            LDR              R0, [R1]    ; R0 = [R1]
+   31 00000016 F020 0003       BIC              R0, R0, #0x03 ; R0 = R0 & NOT(0
+                                                            x03) 
+   32 0000001A 6008            STR              R0, [R1]
+   33 0000001C         
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   34 0000001C 4929            LDR              R1, =GPIO_PORTN_DIR_R ; R1 = &G
+                                                            PIO_PORTN_DIR_R
+   35 0000001E 6808            LDR              R0, [R1]    ; R0 = [R1]
+   36 00000020 F040 0003       ORR              R0, R0, #0x03 ; R0 = R0|0x03 
+   37 00000024 6008            STR              R0, [R1]
+   38 00000026         
+   39 00000026         ;regular port function
+   40 00000026 4928            LDR              R1, =GPIO_PORTJ_AFSEL_R ; R1 = 
+                                                            &GPIO_PORTJ_AFSEL_R
+                                                            
+   41 00000028 6808            LDR              R0, [R1]    ; R0 = [R1]
+   42 0000002A F020 0003       BIC              R0, R0, #0x03
+   43 0000002E 6008            STR              R0, [R1]
+   44 00000030         
+   45 00000030 4926            LDR              R1, =GPIO_PORTN_AFSEL_R ; R1 = 
+                                                            &GPIO_PORTN_AFSEL_R
+                                                            
+   46 00000032 6808            LDR              R0, [R1]    ; R0 = [R1]
+   47 00000034 F020 0003       BIC              R0, R0, #0x03
+   48 00000038 6008            STR              R0, [R1]
+   49 0000003A         
+   50 0000003A         ; digital enable
+   51 0000003A 4925            LDR              R1, =GPIO_PORTJ_DEN_R ; R1 = &G
+                                                            PIO_PORTJ_DEN_R
+   52 0000003C 6808            LDR              R0, [R1]    ; R0 = [R1]
+   53 0000003E F040 0003       ORR              R0, R0, #0x03 ; R0 = R0|0x03
+   54 00000042 6008            STR              R0, [R1]
+   55 00000044         
+   56 00000044 4923            LDR              R1, =GPIO_PORTN_DEN_R ; R1 = &G
+                                                            PIO_PORTN_DEN_R
+   57 00000046 6808            LDR              R0, [R1]    ; R0 = [R1]
+   58 00000048 F040 0003       ORR              R0, R0, #0x03 ; R0 = R0|0x03
+   59 0000004C 6008            STR              R0, [R1]
+   60 0000004E         
+   61 0000004E         ; 5) enable PULL-UP port
+   62 0000004E         
+   63 0000004E 4922            LDR              R1, =GPIO_PORTJ_PUR_R
+   64 00000050 6808            LDR              R0, [R1]
+   65 00000052 F040 0003       ORR              R0, R0, #0x03
+   66 00000056 6008            STR              R0, [R1]
+   67 00000058         
+   68 00000058 4770            BX               LR
+   69 0000005A         
+   70 0000005A         DELAY
+   71 0000005A 4A20            LDR              R2, =800000
+   72 0000005C         Loop
+   73 0000005C F1A2 0201       SUB              R2,#1
+   74 00000060 2A00            CMP              R2,#0
+   75 00000062 D1FB            BNE              Loop
+   76 00000064         
+   77 00000064 4770            BX               LR
+   78 00000066         
+   79 00000066         
+   80 00000066         BLINK                                ;blink 3 times
+   81 00000066 F04F 0303       MOV              R3,#3
+   82 0000006A         BLOOP
+   83 0000006A 481D            LDR              R0,=GPIO_PORTN_DATA_R
+   84 0000006C 6801            LDR              R1,[R0]
+   85 0000006E F041 0103       ORR              R1,#0x03
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   86 00000072 6001            STR              R1,[R0]
+   87 00000074 F7FF FFF1       BL               DELAY
+   88 00000078         
+   89 00000078 F001 0100       AND              R1,#0x00
+   90 0000007C 6001            STR              R1,[R0]
+   91 0000007E F7FF FFEC       BL               DELAY
+   92 00000082         
+   93 00000082 F1A3 0301       SUB              R3,#1
+   94 00000086 2B00            CMP              R3,#0
+   95 00000088 D1EF            BNE              BLOOP
+   96 0000008A         
+   97 0000008A E010            B                SWITCH2
+   98 0000008C         
+   99 0000008C         
+  100 0000008C         
+  101 0000008C         main
+  102 0000008C F7FF FFB8       BL               GPIO_Init
+  103 00000090         
+  104 00000090         LOOP
+  105 00000090 4814            LDR              R0, =GPIO_PORTJ_DATA_R ; Load d
+                                                            ata from Port J dat
+                                                            a register
+  106 00000092 6801            LDR              R1, [R0]    ; for sw1
+  107 00000094 6802            LDR              R2, [R0]    ; for sw2
+  108 00000096 4812            LDR              R0, =GPIO_PORTN_DATA_R 
+                                                            ; load LED address
+  109 00000098         
+  110 00000098         SWITCH1
+  111 00000098 F001 0101       AND              R1,#0x01    ; 
+  112 0000009C 2900            CMP              R1,#0x00    ; check sw1, low is
+                                                             on
+  113 0000009E D106            BNE              SWITCH2     ; if sw1 off, jump
+  114 000000A0 F002 0202       AND              R2, #0x02   ; else, check sw2
+  115 000000A4 2A00            CMP              R2, #0x00
+  116 000000A6 BF1A            ITTE             NE          ;if off, TT, else, 
+                                                            E
+  117 000000A8 2102            MOVNE            R1,#0x02
+  118 000000AA 6001            STRNE            R1,[R0]
+  119 000000AC E7DB            BEQ              BLINK       ;
+  120 000000AE         
+  121 000000AE         
+  122 000000AE         SWITCH2
+  123 000000AE F002 0202       AND              R2, #0x02
+  124 000000B2 2A00            CMP              R2, #0x00
+  125 000000B4 BF04            ITT              EQ          ; if reset=1     
+  126 000000B6 2101            MOVEQ            R1,#0x01
+  127 000000B8 6001            STREQ            R1,[R0]
+  128 000000BA E7E9            B                LOOP
+  129 000000BC         
+  130 000000BC         
+  131 000000BC                 ALIGN
+  132 000000BC                 END
+              400FE608 
+              40060400 
+              40064400 
+              40060420 
+              40064420 
+              4006051C 
+              4006451C 
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+              40060510 
+              000C3500 
+              400643FC 
+              400603FC 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp.sp --apcs=
+interwork --depend=.\objects\main.d -o.\objects\main.o -I.\RTE\_Target_1 -IN:\E
+CE4240\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include -IN:\ECE4240\Packs\Keil\TM4C_DF
+P\1.1.0\Device\Include\TM4C129 --predefine="__EVAL SETA 1" --predefine="__UVISI
+ON_VERSION SETA 536" --predefine="_RTE_ SETA 1" --predefine="TM4C1294NCPDT SETA
+ 1" --predefine="_RTE_ SETA 1" --list=.\listings\main.lst main.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 1 in file main.s
+   Uses
+      None
+Comment: .text unused
+BLINK 00000066
+
+Symbol: BLINK
+   Definitions
+      At line 80 in file main.s
+   Uses
+      At line 119 in file main.s
+Comment: BLINK used once
+BLOOP 0000006A
+
+Symbol: BLOOP
+   Definitions
+      At line 82 in file main.s
+   Uses
+      At line 95 in file main.s
+Comment: BLOOP used once
+DELAY 0000005A
+
+Symbol: DELAY
+   Definitions
+      At line 70 in file main.s
+   Uses
+      At line 87 in file main.s
+      At line 91 in file main.s
+
+GPIO_Init 00000000
+
+Symbol: GPIO_Init
+   Definitions
+      At line 19 in file main.s
+   Uses
+      At line 102 in file main.s
+Comment: GPIO_Init used once
+LOOP 00000090
+
+Symbol: LOOP
+   Definitions
+      At line 104 in file main.s
+   Uses
+      At line 128 in file main.s
+Comment: LOOP used once
+Loop 0000005C
+
+Symbol: Loop
+   Definitions
+      At line 72 in file main.s
+   Uses
+      At line 75 in file main.s
+Comment: Loop used once
+SWITCH1 00000098
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+Symbol: SWITCH1
+   Definitions
+      At line 110 in file main.s
+   Uses
+      None
+Comment: SWITCH1 unused
+SWITCH2 000000AE
+
+Symbol: SWITCH2
+   Definitions
+      At line 122 in file main.s
+   Uses
+      At line 97 in file main.s
+      At line 113 in file main.s
+
+main 0000008C
+
+Symbol: main
+   Definitions
+      At line 101 in file main.s
+   Uses
+      At line 3 in file main.s
+Comment: main used once
+10 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+GPIO_PORTJ_AFSEL_R 40060420
+
+Symbol: GPIO_PORTJ_AFSEL_R
+   Definitions
+      At line 9 in file main.s
+   Uses
+      At line 40 in file main.s
+Comment: GPIO_PORTJ_AFSEL_R used once
+GPIO_PORTJ_DATA_R 400603FC
+
+Symbol: GPIO_PORTJ_DATA_R
+   Definitions
+      At line 5 in file main.s
+   Uses
+      At line 105 in file main.s
+Comment: GPIO_PORTJ_DATA_R used once
+GPIO_PORTJ_DEN_R 4006051C
+
+Symbol: GPIO_PORTJ_DEN_R
+   Definitions
+      At line 7 in file main.s
+   Uses
+      At line 51 in file main.s
+Comment: GPIO_PORTJ_DEN_R used once
+GPIO_PORTJ_DIR_R 40060400
+
+Symbol: GPIO_PORTJ_DIR_R
+   Definitions
+      At line 6 in file main.s
+   Uses
+      At line 29 in file main.s
+Comment: GPIO_PORTJ_DIR_R used once
+GPIO_PORTJ_PUR_R 40060510
+
+Symbol: GPIO_PORTJ_PUR_R
+   Definitions
+      At line 8 in file main.s
+   Uses
+      At line 63 in file main.s
+Comment: GPIO_PORTJ_PUR_R used once
+GPIO_PORTN_AFSEL_R 40064420
+
+Symbol: GPIO_PORTN_AFSEL_R
+   Definitions
+      At line 15 in file main.s
+   Uses
+      At line 45 in file main.s
+Comment: GPIO_PORTN_AFSEL_R used once
+GPIO_PORTN_DATA_R 400643FC
+
+Symbol: GPIO_PORTN_DATA_R
+   Definitions
+      At line 12 in file main.s
+   Uses
+      At line 83 in file main.s
+      At line 108 in file main.s
+
+GPIO_PORTN_DEN_R 4006451C
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+Symbol: GPIO_PORTN_DEN_R
+   Definitions
+      At line 14 in file main.s
+   Uses
+      At line 56 in file main.s
+Comment: GPIO_PORTN_DEN_R used once
+GPIO_PORTN_DIR_R 40064400
+
+Symbol: GPIO_PORTN_DIR_R
+   Definitions
+      At line 13 in file main.s
+   Uses
+      At line 34 in file main.s
+Comment: GPIO_PORTN_DIR_R used once
+SYSCTL_RCGCGPIO_R 400FE608
+
+Symbol: SYSCTL_RCGCGPIO_R
+   Definitions
+      At line 17 in file main.s
+   Uses
+      At line 20 in file main.s
+Comment: SYSCTL_RCGCGPIO_R used once
+10 symbols
+357 symbols in table
